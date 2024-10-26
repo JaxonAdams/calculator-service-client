@@ -1,5 +1,7 @@
 import { useState } from "react";
+
 import Header from "../components/Header";
+import JWTService from "../services/JWTService";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -42,7 +44,7 @@ const Login = () => {
             const result = await loginUser(username, password);
             console.log("Login successful:", result);
 
-            localStorage.setItem("token", result.token);
+            JWTService.setToken(result.token);
         } catch (error) {
             console.error("Login failed:", error);
             setErrorMessage(error.message);
