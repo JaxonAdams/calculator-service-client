@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header";
 import JWTService from "../services/JWTService";
@@ -35,6 +36,7 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const navigate = useNavigate();
 
     const handleSubmit = async e => {
         e.preventDefault();
@@ -45,6 +47,7 @@ const Login = () => {
             console.log("Login successful:", result);
 
             JWTService.setToken(result.token);
+            navigate("/");
         } catch (error) {
             console.error("Login failed:", error);
             setErrorMessage(error.message);
