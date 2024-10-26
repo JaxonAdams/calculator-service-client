@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Header from "../components/Header";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -50,6 +51,7 @@ const Login = () => {
 
     return (
         <div id="login-page">
+            <Header />
             <div className="container my-3 p-3 border border-dark rounded">
                 <form id="login-form" onSubmit={handleSubmit}>
                     <div className="mb-3">
