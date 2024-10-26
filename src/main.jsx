@@ -8,8 +8,8 @@ import {
 import './index.css';
 
 import App from './App.jsx';
-import NotFound from './pages/notFound.jsx';
-import Login from './pages/login.jsx';
+import NotFound from './pages/NotFound.jsx';
+import Login from './pages/Login.jsx';
 
 const router = createBrowserRouter([
     {
