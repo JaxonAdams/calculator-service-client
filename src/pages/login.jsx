@@ -12,7 +12,11 @@ const loginUser = async (username, password) => {
             body: JSON.stringify({ username, password }),
         });
 
-        if (!response.ok) {
+        if (response.status === 404) {
+            throw new Error("User not found");
+        } else if (response.status === 401) {
+            throw new Error("Invalid password");
+        } else if (!response.ok) {
             throw new Error("Failed to log in");
         }
 
@@ -27,15 +31,20 @@ const loginUser = async (username, password) => {
 const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleSubmit = async e => {
         e.preventDefault();
+        setErrorMessage("");
 
         try {
             const result = await loginUser(username, password);
             console.log("Login successful:", result);
+
+            localStorage.setItem("token", result.token);
         } catch (error) {
             console.error("Login failed:", error);
+            setErrorMessage(error.message);
         }
     };
 
@@ -54,6 +63,7 @@ const Login = () => {
                     </div>
                     <button type="submit" className="btn btn-primary">Submit</button>
                 </form>
+                {errorMessage && <div className="mt-3 alert alert-danger">{errorMessage}</div>}
             </div>
         </div>
     );
