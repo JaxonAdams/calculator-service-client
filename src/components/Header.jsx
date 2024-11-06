@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import JWTService from "../services/JWTService";
-import iconSvg from "../assets/icon.svg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import JWTService from "../services/JWTService";
+import CalculatorAPIService from "../services/CalculatorAPIService";
+
+import iconSvg from "../assets/icon.svg";
 
 const Header = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,32 +17,16 @@ const Header = () => {
 
     useEffect(() => {
         if (isLoggedIn) {
-            fetchUserBalance();
+            handleFetchUserBalance();
         } else {
             setBalance(null);
         }
     }, [isLoggedIn]);
 
-    const fetchUserBalance = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/users/balance`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${JWTService.getToken()}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch balance");
-            }
-
-            const data = await response.json();
-            setBalance(parseFloat(data.balance));
-        } catch (error) {
-            console.error("Failed to fetch balance:", error);
-        }
-    }
+    const handleFetchUserBalance = async () => {
+        const balance = await CalculatorAPIService.fetchUserBalance();
+        setBalance(balance);
+    };
 
     const handleLogout = () => {
         JWTService.removeToken();
