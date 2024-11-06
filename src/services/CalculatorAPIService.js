@@ -25,9 +25,13 @@ class CalculatorAPIService {
         }
     }
 
-    async fetchCalculationHistory() {
+    async fetchCalculationHistory(page, pageSize) {
+        const results = [];
+        let totalRecords = 0;
+
         try {
-            const response = await fetch(`${this.api_base_url}/api/v1/calculations`, {
+            const queryString = `page=${page}&page_size=${pageSize}`;
+            const response = await fetch(`${this.api_base_url}/api/v1/calculations?${queryString}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -40,10 +44,14 @@ class CalculatorAPIService {
             }
 
             const data = await response.json();
-            return data;
+
+            results.push(...data.results);
+            totalRecords = data.metadata.total
         } catch (error) {
             console.error("Failed to fetch calculation history:", error);
         }
+
+        return {"results": results, "total" : totalRecords};
     }
 
 }

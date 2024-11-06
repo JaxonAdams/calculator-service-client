@@ -9,22 +9,25 @@ import CalculatorAPIService from "../services/CalculatorAPIService";
 
 const History = () => {
     const [calcHistory, setCalcHistory] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const navigate = useNavigate();
     
     useEffect(() => {
         if (!JWTService.isLoggedIn()) {
             navigate("/login");
         }
-        handleFetchCalculationHistory();
-    }, []);
+        handleFetchCalculationHistory(currentPage, 10);
+    }, [currentPage]);
 
-    const handleFetchCalculationHistory = async () => {
-        const history = await CalculatorAPIService.fetchCalculationHistory();
-
-        console.log(history["metadata"]);
-
+    const handleFetchCalculationHistory = async (page, limit) => {
+        const history = await CalculatorAPIService.fetchCalculationHistory(page, limit);
         setCalcHistory(history["results"]);
-        console.log(history["results"]);
+        setTotalPages(Math.ceil(history["total"] / limit));
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
     };
 
     const formatDateStr = (dateStr) => {
@@ -42,14 +45,11 @@ const History = () => {
                 continue;
             }
 
-            // if operand type is object-literal, format it as a json string
             if (typeof operand === "object") {
-                // I may come back later to include the object in a nice format
                 formatted.push("-")
                 continue;
             }
         }
-
         return formatted.join(", ");
     };
 
@@ -86,6 +86,27 @@ const History = () => {
                         })}
                     </tbody>
                 </table>
+                <nav>
+                    <ul className="pagination justify-content-center">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <button className="page-link" style={{ textDecoration: 'none' }} onClick={() => handlePageChange(currentPage - 1)}>
+                                Previous
+                            </button>
+                        </li>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                                <button className="page-link" style={{ textDecoration: 'none' }} onClick={() => handlePageChange(index + 1)}>
+                                    {index + 1}
+                                </button>
+                            </li>
+                        ))}
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <button className="page-link" style={{ textDecoration: 'none' }} onClick={() => handlePageChange(currentPage + 1)}>
+                                Next
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     );
