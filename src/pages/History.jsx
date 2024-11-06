@@ -9,25 +9,37 @@ import CalculatorAPIService from "../services/CalculatorAPIService";
 
 const History = () => {
     const [calcHistory, setCalcHistory] = useState([]);
+    const [fullHistory, setFullHistory] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const navigate = useNavigate();
     
     useEffect(() => {
         if (!JWTService.isLoggedIn()) {
             navigate("/login");
         }
-        handleFetchCalculationHistory(currentPage, 10);
-    }, [currentPage]);
+        handleFetchCalculationHistory(pageSize);
+    }, []);
 
-    const handleFetchCalculationHistory = async (page, limit) => {
-        const history = await CalculatorAPIService.fetchCalculationHistory(page, limit);
-        setCalcHistory(history["results"]);
+    const handleFetchCalculationHistory = async (limit) => {
+        const history = await CalculatorAPIService.fetchCalculationHistory(1, limit);
+        setFullHistory(history["results"]);
+        setCalcHistory(history["results"].slice(0, limit));
         setTotalPages(Math.ceil(history["total"] / limit));
     };
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
+        setCalcHistory(fullHistory.slice((page - 1) * pageSize, page * pageSize));
+    };
+
+    const handlePageSizeChange = (size) => {
+        console.log(size);
+
+        setPageSize(size);
+        setTotalPages(Math.ceil(fullHistory.length / size));
+        setCalcHistory(fullHistory.slice((currentPage - 1) * size, currentPage * size));
     };
 
     const formatDateStr = (dateStr) => {
@@ -53,7 +65,7 @@ const History = () => {
         return formatted.join(", ");
     };
 
-    const formatBalance = (balance) => {
+    const formatCurrency = (balance) => {
         return parseFloat(balance).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     };
 
@@ -69,6 +81,7 @@ const History = () => {
                             <th scope="col">Operation</th>
                             <th scope="col">Operands</th>
                             <th scope="col">Result</th>
+                            <th scope="col">Cost</th>
                             <th scope="col">Remaining Balance</th>
                         </tr>
                     </thead>
@@ -80,14 +93,15 @@ const History = () => {
                                     <td>{calculation["operation"]["type"]}</td>
                                     <td>{formatOperands(calculation["calculation"]["operands"])}</td>
                                     <td>{calculation["calculation"]["result"]}</td>
-                                    <td>{formatBalance(calculation["user_balance"])}</td>
+                                    <td>{formatCurrency(calculation["operation"]["cost"])}</td>
+                                    <td>{formatCurrency(calculation["user_balance"])}</td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
-                <nav>
-                    <ul className="pagination justify-content-center">
+                <nav className="container-fluid d-flex justify-content-center">
+                    <ul className="pagination mx-3">
                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                             <button className="page-link" style={{ textDecoration: 'none' }} onClick={() => handlePageChange(currentPage - 1)}>
                                 Previous
@@ -106,6 +120,11 @@ const History = () => {
                             </button>
                         </li>
                     </ul>
+                    <select className="form-select mb-3 mx-3" defaultValue={"10"} onChange={e => handlePageSizeChange(parseInt(e.target.value))} aria-label="Page select" style={{maxWidth: "75px"}}>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                    </select>
                 </nav>
             </div>
         </div>
