@@ -14,6 +14,7 @@ const History = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+    const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -32,15 +33,24 @@ const History = () => {
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
-        setCalcHistory(fullHistory.slice((page - 1) * pageSize, page * pageSize));
+        setCalcHistory(
+            getFilteredData(
+                fullHistory,
+                searchQuery
+            ).slice((page - 1) * pageSize, page * pageSize)
+        );
     };
 
     const handlePageSizeChange = (size) => {
         console.log(size);
 
+        let filtered = getFilteredData(fullHistory, searchQuery);
+
         setPageSize(size);
-        setTotalPages(Math.ceil(fullHistory.length / size));
-        setCalcHistory(fullHistory.slice((currentPage - 1) * size, currentPage * size));
+        setTotalPages(Math.ceil(filtered.length / size));
+        setCalcHistory(
+            filtered.slice((currentPage - 1) * size, currentPage * size)
+        );
     };
 
     const handleSort = (key) => {
@@ -64,7 +74,12 @@ const History = () => {
             return 0;
         });
         setFullHistory(sortedHistory);
-        setCalcHistory(sortedHistory.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+        setCalcHistory(
+            getFilteredData(
+                sortedHistory,
+                searchQuery
+            ).slice((currentPage - 1) * pageSize, currentPage * pageSize)
+        );
     };
 
     const renderSortIcon = (key) => {
@@ -72,7 +87,30 @@ const History = () => {
             return sortConfig.direction === 'asc' ? '▲' : '▼';
         }
         return null;
-    }
+    };
+
+    const getFilteredData = (data, query) => {
+        let filtered = data.filter((calculation) => {
+            return Object.values(calculation).some((value) => {
+                if (typeof value === "object") {
+                    return Object.values(value).some((subvalue) => {
+                        return subvalue.toString().toLowerCase().includes(query.toLowerCase());
+                    });
+                }
+                return value.toString().toLowerCase().includes(query.toLowerCase());
+            });
+        });
+
+        setTotalPages(Math.ceil(filtered.length / pageSize));
+        return filtered;
+    };
+
+    const handleSearch = (e) => {
+        setSearchQuery(e.target.value);
+        setCalcHistory(
+            getFilteredData(fullHistory, e.target.value).slice((currentPage - 1) * pageSize, currentPage * pageSize)
+        );
+    };
 
     const formatDateStr = (dateStr) => {
         const date = new Date(dateStr);
@@ -106,6 +144,9 @@ const History = () => {
             <Header />
             <div className="container my-3 p-3 border border-dark rounded">
                 <h1 className="p-3 mb-5 border-bottom border-3">History</h1>
+
+                <input type="text" className="form-control mb-3" placeholder="Search" value={searchQuery} onChange={handleSearch} />
+
                 <table className="table table-striped table-hover rounded">
                     <thead className="table-dark">
                         <tr>
@@ -118,8 +159,8 @@ const History = () => {
                             <th scope="col">
                                 Operands
                             </th>
-                            <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("calculation.result")}>
-                                Result {renderSortIcon("calculation.result")}
+                            <th scope="col">
+                                Result
                             </th>
                             <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("operation.cost")}>
                                 Cost {renderSortIcon("operation.cost")}
