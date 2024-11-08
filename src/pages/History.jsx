@@ -13,6 +13,7 @@ const History = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -41,6 +42,37 @@ const History = () => {
         setTotalPages(Math.ceil(fullHistory.length / size));
         setCalcHistory(fullHistory.slice((currentPage - 1) * size, currentPage * size));
     };
+
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+        const sortedHistory = fullHistory.sort((a, b) => {
+            for (let subkey of key.split(".")) {
+                a = a[subkey];
+                b = b[subkey];
+            }
+
+            if (a < b) {
+                return direction === 'asc' ? -1 : 1;
+            }
+            if (a > b) {
+                return direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+        setFullHistory(sortedHistory);
+        setCalcHistory(sortedHistory.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+    };
+
+    const renderSortIcon = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'asc' ? '▲' : '▼';
+        }
+        return null;
+    }
 
     const formatDateStr = (dateStr) => {
         const date = new Date(dateStr);
@@ -77,12 +109,24 @@ const History = () => {
                 <table className="table table-striped table-hover rounded">
                     <thead className="table-dark">
                         <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Operation</th>
-                            <th scope="col">Operands</th>
-                            <th scope="col">Result</th>
-                            <th scope="col">Cost</th>
-                            <th scope="col">Remaining Balance</th>
+                            <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("date")}>
+                                Date {renderSortIcon("date")}
+                            </th>
+                            <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("operation.type")} >
+                                Operation {renderSortIcon("operation.type")}
+                            </th>
+                            <th scope="col">
+                                Operands
+                            </th>
+                            <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("calculation.result")}>
+                                Result {renderSortIcon("calculation.result")}
+                            </th>
+                            <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("operation.cost")}>
+                                Cost {renderSortIcon("operation.cost")}
+                            </th>
+                            <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("user_balance")}>
+                                Remaining Balance {renderSortIcon("user_balance")}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
