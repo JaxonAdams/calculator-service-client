@@ -26,6 +26,27 @@ class CalculatorAPIService {
         }
     }
 
+    async fetchAvailableOps() {
+        try {
+            const response = await fetch(`${this.api_base_url}/api/v1/operations`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${JWTService.getToken()}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch available operations");
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Failed to fetch available operations:", error);
+        }
+    }
+
     async fetchCalculationHistory(page, pageSize) {
         const results = [];
         let totalRecords = 0;
