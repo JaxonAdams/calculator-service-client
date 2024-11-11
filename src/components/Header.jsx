@@ -6,7 +6,7 @@ import CalculatorAPIService from "../services/CalculatorAPIService";
 
 import iconSvg from "../assets/icon.svg";
 
-const Header = () => {
+const Header = ({ updateBalance, setUpdateBalance }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [balance, setBalance] = useState(null);
     const navigate = useNavigate();
@@ -22,6 +22,13 @@ const Header = () => {
             setBalance(null);
         }
     }, [isLoggedIn]);
+
+    useEffect(() => {
+        if (updateBalance) {
+            handleFetchUserBalance();
+            setUpdateBalance(false);
+        }
+    }, [updateBalance]);
 
     const handleFetchUserBalance = async () => {
         const balance = await CalculatorAPIService.fetchUserBalance();

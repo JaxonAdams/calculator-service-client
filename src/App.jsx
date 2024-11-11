@@ -4,7 +4,7 @@ import "./App.css";
 function App() {
     return (
         <div className="app">
-            <Header />
+            <Header updateBalance={false} setUpdateBalance={() => {}} />
             <div className="container my-3">
                 <div className="container p-3 my-5 border-bottom border-3">
                     <h1 className="text-center">Premium Calculator</h1>

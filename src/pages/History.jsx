@@ -16,6 +16,7 @@ const History = () => {
     const [pageSize, setPageSize] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
     const [searchQuery, setSearchQuery] = useState("");
+    const [updateBalance, setUpdateBalance] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const navigate = useNavigate();
     
@@ -140,6 +141,24 @@ const History = () => {
         );
     };
 
+    const handleDelete = (id) => {
+        console.log(`Deleting calculation ID ${id}...`);
+
+        if (!window.confirm("Are you sure you want to delete this calculation?")) {
+            return;
+        }
+
+        CalculatorAPIService.deleteCalculation(id)
+            .then(() => {
+                console.log(`Calculation ID ${id} deleted successfully!`);
+                handleFetchCalculationHistory(pageSize);
+                setUpdateBalance(true);
+            })
+            .catch(error => {
+                console.error(`Failed to delete calculation ID ${id}:`, error);
+            });
+    };
+
     const formatDateStr = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -169,7 +188,7 @@ const History = () => {
 
     return (
         <div id="history-page">
-            <Header />
+            <Header updateBalance={updateBalance} setUpdateBalance={setUpdateBalance} />
             <div className="container my-3 p-3 border border-dark rounded">
                 <h1 className="p-3 mb-5 border-bottom border-3">History</h1>
 
@@ -213,7 +232,7 @@ const History = () => {
                                     <td>{calculation["calculation"]["result"]}</td>
                                     <td>{formatCurrency(calculation["operation"]["cost"])}</td>
                                     <td>{formatCurrency(calculation["user_balance"])}</td>
-                                    {isAdmin && <td><button className="btn btn-danger" onClick={() => console.log(`Delete ${calculation["id"]}`)}>Delete</button></td>}
+                                    {isAdmin && <td><button className="btn btn-danger" onClick={() => handleDelete(calculation["id"])}>Delete</button></td>}
                                 </tr>
                             );
                         })}

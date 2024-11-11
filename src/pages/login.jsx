@@ -56,7 +56,7 @@ const Login = () => {
 
     return (
         <div id="login-page">
-            <Header />
+            <Header updateBalance={false} setUpdateBalance={() => {}} />
             <div className="container my-3 p-3 border border-dark rounded">
                 <form id="login-form" onSubmit={handleSubmit}>
                     <div className="mb-3">

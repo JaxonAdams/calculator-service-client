@@ -3,6 +3,7 @@ import JWTService from "./JWTService";
 class CalculatorAPIService {
 
     api_base_url = import.meta.env.VITE_API_BASE_URL;
+    admin_api_key = import.meta.env.VITE_ADMIN_API_KEY;
 
     async fetchUserBalance() {
         try {
@@ -60,6 +61,22 @@ class CalculatorAPIService {
         }
 
         return {"results": results, "total" : totalRecords};
+    }
+
+    async deleteCalculation(id) {
+        const response = await fetch(`${this.api_base_url}/api/v1/calculations/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.admin_api_key}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete calculation");
+        }
+
+        return true;
     }
 
 }
