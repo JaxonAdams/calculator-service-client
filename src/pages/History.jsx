@@ -8,6 +8,7 @@ import CalculatorAPIService from "../services/CalculatorAPIService";
 
 
 const History = () => {
+    const [isLoading, setIsLoading] = useState(true);
     const [calcHistory, setCalcHistory] = useState([]);
     const [fullHistory, setFullHistory] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -15,20 +16,47 @@ const History = () => {
     const [pageSize, setPageSize] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
     const [searchQuery, setSearchQuery] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
     const navigate = useNavigate();
     
     useEffect(() => {
         if (!JWTService.isLoggedIn()) {
             navigate("/login");
         }
+        
         handleFetchCalculationHistory(pageSize);
+
+        // handle "admin mode" toggle
+        const toggleAdminMode = () => {
+            setIsAdmin(prevIsAdmin => !prevIsAdmin);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "m" && e.ctrlKey && !e.repeat) {
+                e.preventDefault();
+                toggleAdminMode();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        // clean up the event listener when the component unmounts
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
     }, []);
 
     const handleFetchCalculationHistory = async (limit) => {
-        const history = await CalculatorAPIService.fetchCalculationHistory(1, limit);
-        setFullHistory(history["results"]);
-        setCalcHistory(history["results"].slice(0, limit));
-        setTotalPages(Math.ceil(history["total"] / limit));
+        try {
+            const history = await CalculatorAPIService.fetchCalculationHistory(1, limit);
+            setFullHistory(history["results"]);
+            setCalcHistory(history["results"].slice(0, limit));
+            setTotalPages(Math.ceil(history["total"] / limit));
+        } catch (error) {
+            console.error("Failed to fetch calculation history:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handlePageChange = (page) => {
@@ -168,10 +196,15 @@ const History = () => {
                             <th scope="col" style={{cursor: "pointer"}} onClick={() => handleSort("user_balance")}>
                                 Remaining Balance {renderSortIcon("user_balance")}
                             </th>
+                            {isAdmin && <th scope="col">Delete</th>}
                         </tr>
                     </thead>
                     <tbody>
-                        {calcHistory.map((calculation, index) => {
+                        {isLoading
+                        ? 
+                        <tr><td colSpan="6" className="text-center">Loading...</td></tr> 
+                        :
+                        calcHistory.map((calculation, index) => {
                             return (
                                 <tr key={index}>
                                     <td>{formatDateStr(calculation["date"])}</td>
@@ -180,6 +213,7 @@ const History = () => {
                                     <td>{calculation["calculation"]["result"]}</td>
                                     <td>{formatCurrency(calculation["operation"]["cost"])}</td>
                                     <td>{formatCurrency(calculation["user_balance"])}</td>
+                                    {isAdmin && <td><button className="btn btn-danger" onClick={() => console.log(`Delete ${calculation["id"]}`)}>Delete</button></td>}
                                 </tr>
                             );
                         })}
@@ -212,6 +246,11 @@ const History = () => {
                     </select>
                 </nav>
             </div>
+            <footer className="container-fluid d-flex justify-content-center">
+                {isAdmin
+                ? <p className="text-muted">Welcome, administrator!</p>
+                : <p className="text-muted">Psst! Hey test user! Press <kbd>Ctrl</kbd> + <kbd>M</kbd> to toggle admin mode.</p>}
+            </footer>
         </div>
     );
 };
