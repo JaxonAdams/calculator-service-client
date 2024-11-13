@@ -51,6 +51,25 @@ const Calculator = () => {
         setOperandValues(newValues);
     };
 
+    const handleSettingsChange = (e) => {
+        const key = e.target.id.split("-")[2];
+        let value = e.target.value;
+        
+        // if first operand value is an object, we need to update the object
+        if (selectedOp.options.operand_type === "dictionary") {
+            const newSettings = operandValues[0] || {};
+
+            if (selectedOp.options.options[key].type === "int") {
+                value = parseInt(value);
+            } else if (selectedOp.options.options[key].type === "bool") {
+                value = value === "true";
+            }
+
+            newSettings[key] = value;
+            setOperandValues([newSettings]);
+        }
+    };
+
     const configureFirstOperand = () => {
         if (!selectedOp) {
             return;
@@ -66,6 +85,33 @@ const Calculator = () => {
                     )}
                 </div>
             );
+        }
+
+        if (selectedOp.options.operand_type === "dictionary") {
+            const settingsInputs = [];
+            for (let optionKey in selectedOp.options.options) {
+                let optionInfo = selectedOp.options.options[optionKey];
+                
+                let inputElement;
+                if (optionInfo.type === "number" || optionInfo.type === "int") {
+                    inputElement = <input type="number" className="form-control" id={`operand-1-${optionKey}`} onChange={handleSettingsChange} />;
+                } else if (optionInfo.type === "bool") {
+                    inputElement = (
+                        <select className="form-select" id={`operand-1-${optionKey}`} onChange={handleSettingsChange} defaultValue={"true"}>
+                            <option value="true">True</option>
+                            <option value="false">False</option>
+                        </select>
+                    );
+                }
+
+                settingsInputs.push(
+                    <div className="input-group mb-3" key={optionKey}>
+                        <label htmlFor={`operand-1-${optionKey}`} className="input-group-text">{formatOperator(optionKey)}</label>
+                        {inputElement}
+                    </div>
+                );
+            }
+            return settingsInputs;
         }
     };
 
@@ -108,7 +154,7 @@ const Calculator = () => {
                         ))}
                     </div>
                 </form>
-                <div>TESTING... {operandValues.join(", ")}</div>
+                <div>TESTING... {operandValues && selectedOp && selectedOp.options.operand_type === "dictionary" ? JSON.stringify(operandValues[0]) : operandValues.join(", ")}</div>
             </div>
         </div>
     );
