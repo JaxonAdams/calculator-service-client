@@ -100,6 +100,37 @@ class CalculatorAPIService {
         return true;
     }
 
+    async requestCalculation(opType, operands) {
+
+        const payload = {
+            "operation": opType,
+            "operands": operands,
+        };
+
+        try {
+            const response = await fetch(`${this.api_base_url}/api/v1/calculations/new`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${JWTService.getToken()}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(`Failed to request calculation: ${data.error}`);
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            throw error;
+        }
+
+    }
+
 }
 
 export default new CalculatorAPIService();
