@@ -65,9 +65,14 @@ const Header = ({ updateBalance, setUpdateBalance }) => {
                             <a className="nav-link active" aria-current="page" href="/">Home</a>
                         </li>
                         {isLoggedIn && (
+                            <>
+                            <li className="nav-item mx-2 d-flex align-items-center">
+                                <a className="nav-link" href="/calculator">Calculator</a>
+                            </li>
                             <li className="nav-item mx-2 d-flex align-items-center">
                                 <a className="nav-link" href="/history">History</a>
                             </li>
+                            </>
                         )}
                         {isLoggedIn ? (
                             <>

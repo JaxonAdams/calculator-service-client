@@ -5,6 +5,7 @@ import Header from "../components/Header";
 
 import JWTService from "../services/JWTService";
 import CalculatorAPIService from "../services/CalculatorAPIService";
+import { formatDateStr, formatCurrency, formatHistoryOperands, formatOperator } from "../utils/format_util";
 
 
 const History = () => {
@@ -159,33 +160,6 @@ const History = () => {
             });
     };
 
-    const formatDateStr = (dateStr) => {
-        const date = new Date(dateStr);
-        return date.toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-    };
-
-    const formatOperands = (operands) => {
-        let formatted = [];
-        for (let i = 0; i < operands.length; i++) {
-            let operand = operands[i];
-
-            if (typeof operand === "number") {
-                formatted.push(operand);
-                continue;
-            }
-
-            if (typeof operand === "object") {
-                formatted.push("-")
-                continue;
-            }
-        }
-        return formatted.join(", ");
-    };
-
-    const formatCurrency = (balance) => {
-        return parseFloat(balance).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    };
-
     return (
         <div id="history-page">
             <Header updateBalance={updateBalance} setUpdateBalance={setUpdateBalance} />
@@ -227,8 +201,8 @@ const History = () => {
                             return (
                                 <tr key={index}>
                                     <td>{formatDateStr(calculation["date"])}</td>
-                                    <td>{calculation["operation"]["type"]}</td>
-                                    <td>{formatOperands(calculation["calculation"]["operands"])}</td>
+                                    <td>{formatOperator(calculation["operation"]["type"])}</td>
+                                    <td>{formatHistoryOperands(calculation["calculation"]["operands"])}</td>
                                     <td>{calculation["calculation"]["result"]}</td>
                                     <td>{formatCurrency(calculation["operation"]["cost"])}</td>
                                     <td>{formatCurrency(calculation["user_balance"])}</td>
