@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header";
+import Modal from "../components/Modal";
 
 import JWTService from "../services/JWTService";
 import CalculatorAPIService from "../services/CalculatorAPIService";
@@ -14,6 +15,9 @@ const Calculator = () => {
     const [operandValues, setOperandValues] = useState([]);
     const [calculatorError, setCalculatorError] = useState(null);
     const [updateBalance, setUpdateBalance] = useState(false);
+    const [calculationResult, setCalculationResult] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!JWTService.isLoggedIn()) {
@@ -159,12 +163,22 @@ const Calculator = () => {
         try {
             const response = await CalculatorAPIService.requestCalculation(selectedOp.type, operandValues);
             console.log("Calculation result: ", response);
+
             setCalculatorError(null);
             setUpdateBalance(true);
+            setCalculationResult(response.result);
+            setShowModal(true);
         } catch (error) {
             console.error(error);
             setCalculatorError(error.message);
         }
+    };
+
+    const handleModalClose = () => {
+        setShowModal(false);
+        
+        // navigate the user to their history page
+        navigate("/history");
     };
 
     return (
@@ -178,7 +192,7 @@ const Calculator = () => {
                         <label htmlFor="operation-type" className="form-label">Operation Type</label>
                         <div className="input-group mb-3">
                             <span className="input-group-text">{selectedOp ? formatCurrency(selectedOp.cost) : "$~"}</span>
-                            <select className="form-select" id="operation-type" onChange={e => handleOpSelect(e.target.value)}>
+                            <select className="form-select" id="operation-type" onChange={e => handleOpSelect(e.target.value)} value={selectedOp}>
                                 {availableOps.map((op, index) => (
                                     <option key={index} value={op.type}>{formatOperator(op.type)}</option>
                                 ))}
@@ -204,6 +218,9 @@ const Calculator = () => {
                     </div>
                 )}
             </div>
+            <Modal modalTitle="Calculation Results" isOpen={showModal} onClose={handleModalClose}>
+                Your calculation result is: <b>{calculationResult}</b>
+            </Modal>
         </div>
     );
 };
