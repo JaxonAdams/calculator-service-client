@@ -192,7 +192,7 @@ const Calculator = () => {
                         <label htmlFor="operation-type" className="form-label">Operation Type</label>
                         <div className="input-group mb-3">
                             <span className="input-group-text">{selectedOp ? formatCurrency(selectedOp.cost) : "$~"}</span>
-                            <select className="form-select" id="operation-type" onChange={e => handleOpSelect(e.target.value)} value={selectedOp?.type || ""}>
+                            <select className="form-select" id="operation-type" onChange={e => handleOpSelect(e.target.value)} value={selectedOp ? selectedOp.type : ""}>
                                 {availableOps.map((op, index) => (
                                     <option key={index} value={op.type}>{formatOperator(op.type)}</option>
                                 ))}
